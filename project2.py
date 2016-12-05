@@ -35,7 +35,7 @@ def physical(allprocesses):
 
 	processTable = insertProcess(processTable, allprocesses[0], memFree, 0, 44)
 	printTable(processTable)
-	processTable = removeProcess(processTable, allprocesses[0])
+	processTable, bytesRemoved = removeProcess(processTable, allprocesses[0])
 	printTable(processTable)
 
 	# Start Sim Loop
@@ -46,6 +46,10 @@ def physical(allprocesses):
 	# End Sim Loop
 # End physical representation
 
+
+# printTable,
+#	input: a processTable
+#	output: prints processTable and returns 0 on success
 # Start printTable
 def printTable(processTable):
 	# Print physical table
@@ -64,9 +68,11 @@ def printTable(processTable):
 	return 0
 # End printTable
 
+# insertProcess,
+#	input: a processTable and targetProcess,
+#	output: processTable with targetProcess inserted.
 # Start process insertion
 def insertProcess(processTable, targetProcess, memFree, startIndex, endIndex):
-
 	# Decrement memory required
 	memLeft = (int)(targetProcess.memNeeded)
 
@@ -83,8 +89,11 @@ def insertProcess(processTable, targetProcess, memFree, startIndex, endIndex):
 	return processTable
 # End process insertion
 
+# removeProcess
+#	input: a processTable and targetProcess,
+#	output: processTable with targetProcess removed.
+# Start process deletion
 def removeProcess(processTable, targetProcess):
-
 	# Initialize counter for # of bytes removed
 	bytesRemoved = 0
 
@@ -94,7 +103,7 @@ def removeProcess(processTable, targetProcess):
 			processTable[i] = "."
 			bytesRemoved += 1
 
-	return processTable
+	return processTable, bytesRemoved
 # End process deletion
 
 

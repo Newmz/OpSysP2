@@ -16,8 +16,26 @@ class process:
 		retstr = retstr[:-2]
 		return retstr
 
+def physical(allprocesses):
+	print("Hello World")
+	# Creates a list containing 8 lists, each of 32 items, all set to "."
+	tableSize = 256
+	processTable = ["." for x in range(tableSize)]
 
+	# Print physical table
+	for k in range(32):						# Top Bar
+		print("=", end='')
+	print("")
+	for i in range(len(processTable)):		# Contents
+		x = i % 32
+		print("%s" %(processTable[x]), end='')
+		if x == 31:
+			print("")
+	for k in range(32):						# Bottom Bar
+		print("=", end='')
+	print("")
 
+	processTable[0]
 
 if __name__ == '__main__':
 
@@ -35,4 +53,5 @@ if __name__ == '__main__':
 
 	for p in allprocesses:
 		print(p)
-	
+
+	physical(allprocesses)

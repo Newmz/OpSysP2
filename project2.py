@@ -106,6 +106,155 @@ def removeProcess(processTable, targetProcess):
 	return processTable, bytesRemoved
 # End process deletion
 
+# Handles all the virtual memory functions
+#   reads in vitual memory frames
+#   runs three algorithms:
+#       Optimal (OPT)
+#       Least-Recently Used (LRU)
+#       Least-Frequently Used (LFU)
+def virtualMemory():
+	#Read input file for vitual memory frames
+	frames = []
+	frames = open(sys.argv[2]).read()
+	framearray = frames.split()
+
+	OPT(framearray)
+	print()
+	LRU(framearray)
+	print()
+	LFU(framearray)
+
+# Simulates optimal algorithm for virtual memory
+def OPT(framearray, F = 3):
+	print("Simulating OPT with fixed frame size of {0}".format(F))
+
+	mem = []
+	numfaults = 0
+	for i in range(len(framearray)):
+		# Frame not already in memory 
+		if framearray[i] not in mem:
+			# No page fault
+			if len(mem) < 3:
+				mem.append(framearray[i])
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for y in mem:
+					print(" {0}".format(y), end='')
+				for n in range(len(mem), 3):
+					print(" .", end='')
+				print("] PAGE FAULT (no victim page)")
+
+			# Page fault
+			else:
+				numfaults += 1
+				# Read memory into new array
+				longest = []
+				for x in mem:
+					longest.append(x)
+
+				# Step forward to find fututre uses
+				for j in range(i + 1, len(framearray)):
+					if len(longest) == 1:
+						break
+					elif framearray[j] in longest:
+						longest.pop(longest.index(framearray[j]))
+
+				#Tiebreaker
+				if len(longest) != 1:
+					longest = [min(longest)]
+
+				mem[mem.index(longest[0])] = framearray[i]
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for x in mem:
+					print(" {0}".format(x), end='')
+				print("] PAGE FAULT (victim page {0})".format(longest[0]))
+	print("End of OPT simulation ({0} page faults)".format(numfaults))
+
+
+# Simulates Least-Recently Used algorithm for virtual memory
+def LRU(framearray, F  = 3):
+	print("Simulating LRU with fixed frame size of {0}".format(F))
+
+	mem = []
+	numfaults = 0
+	for i in range(len(framearray)):
+		# Frame not already in memory 
+		if framearray[i] not in mem:
+			# No page fault
+			if len(mem) < 3:
+				mem.append(framearray[i])
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for y in mem:
+					print(" {0}".format(y), end='')
+				for n in range(len(mem), 3):
+					print(" .", end='')
+				print("] PAGE FAULT (no victim page)")
+
+			# Page fault
+			else:
+				numfaults += 1
+				# Read memory into new array
+				oldest = []
+				for x in mem:
+					oldest.append(x)
+
+				# Step backwards to find past uses
+				for j in range( i-1, -1, -1):
+					if len(oldest) == 1:
+						break
+					elif framearray[j] in oldest:
+						oldest.pop(oldest.index(framearray[j]))
+
+				mem[mem.index(oldest[0])] = framearray[i]
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for x in mem:
+					print(" {0}".format(x), end='')
+				print("] PAGE FAULT (victim page {0})".format(oldest[0]))
+	print("End of LRU simulation ({0} page faults)".format(numfaults))
+
+# Simulates Least-Frequently Used algorithm for virtual memory
+def LFU(framearray, F = 3):
+	print("Simulating LFU with fixed frame size of {0}".format(F))
+
+	mem = []
+	uses = []
+	numfaults = 0
+	for i in range(len(framearray)):
+		# Frame not already in memory 
+		if framearray[i] not in mem:
+			# No page fault
+			if len(mem) < 3:
+				mem.append(framearray[i])
+				uses.append(1)
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for y in mem:
+					print(" {0}".format(y), end='')
+				for n in range(len(mem), 3):
+					print(" .", end='')
+				print("] PAGE FAULT (no victim page)")
+
+			# Page fault
+			else:
+				numfaults += 1
+				# Find index of smallest with tiebreaker
+				leastidx = 0
+				for j in range(len(uses)):
+					if uses[j] < uses[leastidx] or (uses[j] == uses[leastidx] and mem[j] < mem[leastidx]):
+						leastidx = j
+
+				victim = mem[leastidx]
+				mem[leastidx] = framearray[i]
+				uses[leastidx] = 1
+				print("referencing page {0} [mem:".format(framearray[i]), end='')
+				for x in mem:
+					print(" {0}".format(x), end='')
+				print("] PAGE FAULT (victim page {0})".format(victim))
+
+		# Frame already in memory
+		else:
+			# Increment uses
+			uses[mem.index(framearray[i])] += 1
+
+	print("End of LFU simulation ({0} page faults)".format(numfaults))
 
 
 if __name__ == '__main__':
@@ -128,3 +277,5 @@ if __name__ == '__main__':
 		print(p)
 
 	physical(allprocesses)
+
+	virtualMemory()

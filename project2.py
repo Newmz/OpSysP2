@@ -11,7 +11,7 @@ class process:
 		self.startIndex = -1 #int
 		self.endIndex = -1 #int
 		self.pageTable = [] #list(int)
-		self.done = False
+		self.done = False #bool
 
 	def __str__(self):
 		retstr = "process object " + self.processID + ":\n\tMemory: "+str(self.memNeeded)+"\n\tArrival/Run Times:\n\t\t"
@@ -51,17 +51,19 @@ class process:
 			return self.memNeeded
 
 	def removeNonContiguous(self, memory, time):
-		#go through memory, removing anything that has processID, and then clear the page Table
+		#go through memory, removing anything that has processID, and clear the page Table
 		pagesCleared = 0
 		while len(self.pageTable) > 0:
 			memory[self.pageTable.pop()] = '.'
 			pagesCleared +=1
+		#if this was the last time the process leaves the simulation, mark it 'finished'
 		if time == self.arrivalAndRunTimes[-1][1] + self.arrivalAndRunTimes[-1][0]:
 			self.done = True
 		return pagesCleared
 
 
 	def readyToAdd(self, time):
+		# returns true if the process is to be added at the given time, false otherwise
 		for at in range(len(self.arrivalAndRunTimes)):
 			if self.arrivalAndRunTimes[at][0] == time:
 				if at == 0:
@@ -70,6 +72,7 @@ class process:
 		return False
 
 	def readyToRem(self, time):
+		# returns true if the process is to be removed at the given time, false otherwise
 		for at in self.arrivalAndRunTimes:
 			if at[0]+at[1] == time:
 				return True
@@ -329,14 +332,16 @@ def nonContiguous(pList):
 
 	print("time 0ms: Simulator started (Non-contiguous)")
 	while live:
-		
+		#first we want to check if there are any process that need to be removed at this time step
 		for process in pList:
 			if process.readyToRem(time):
+				#this remove function returns the number of memory slots freed up
 				memFree += process.removeNonContiguous(processTable, time)
 				print("time {0}: Process {1} removed:".format(time, process.processID))
 				printTable(processTable)
 				if process.done:
 					completed += 1
+		#once all due processes have been removed, we can add new ones at this time step
 		for process in pList:
 			if process.readyToAdd(time):
 				success = process.insertNonContiguous(processTable, memFree)
@@ -346,6 +351,7 @@ def nonContiguous(pList):
 					printTable(processTable)
 				else:
 					print("time {0}: cannot place process {1} -- skipped!".format(time, process.processID))
+		#if we've finished all processes (all have exited for the last time) then we are done
 		if completed == len(pList):
 			break
 		time += 1
@@ -353,6 +359,8 @@ def nonContiguous(pList):
 
 
 if __name__ == '__main__':
+	
+	#this first bit parses the file with all of the process info
 	allprocesses = []
 	allLines = open(sys.argv[1]).readlines()
 	numprocesses = allLines[0]

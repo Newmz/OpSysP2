@@ -5,12 +5,13 @@ import time
 
 class process:
 	def __init__(self, pname, mem, arrRun):
-		self.processID = pname
-		self.memNeeded = mem
-		self.arrivalAndRunTimes = arrRun
-		self.startIndex = -1
-		self.endIndex = -1
-		self.pageTable = []
+		self.processID = pname #string
+		self.memNeeded = mem #int
+		self.arrivalAndRunTimes = arrRun #list(list(int,int)) ---> [[0,1], [1,2], ..... , [x,y]]
+		self.startIndex = -1 #int
+		self.endIndex = -1 #int
+		self.pageTable = [] #list(int)
+		self.done = False
 
 	def __str__(self):
 		retstr = "process object " + self.processID + ":\n\tMemory: "+str(self.memNeeded)+"\n\tArrival/Run Times:\n\t\t"
@@ -18,6 +19,9 @@ class process:
 			retstr += str(i[0]) + "/" +str(i[1]) + "\n\t\t"
 		retstr = retstr[:-2]
 		return retstr
+
+	def __lt__(self, other):
+		return self.processID < other.processID
 
 
 	# given a representation of memory (the '.' list), and the number of free slots available,
@@ -33,18 +37,43 @@ class process:
 		
 		if freespace < self.memNeeded:
 			#failure, so must skip process
+			print("process {0} failure in adding".format(self.processID))
 			return -1
 		else:
+			temp = 0
 			for page in range(len(memory)):
-
+				if temp == self.memNeeded:
+					break
 				if memory[page] == '.':
 					memory[page] = self.processID
 					self.pageTable.append(page)
+					temp+=1
 			return self.memNeeded
 
+	def removeNonContiguous(self, memory, time):
+		#go through memory, removing anything that has processID, and then clear the page Table
+		pagesCleared = 0
+		while len(self.pageTable) > 0:
+			memory[self.pageTable.pop()] = '.'
+			pagesCleared +=1
+		if time == self.arrivalAndRunTimes[-1][1] + self.arrivalAndRunTimes[-1][0]:
+			self.done = True
+		return pagesCleared
+
+
 	def readyToAdd(self, time):
-		if self.arrivalAndRunTimes[0] == time:
-			return
+		for at in range(len(self.arrivalAndRunTimes)):
+			if self.arrivalAndRunTimes[at][0] == time:
+				if at == 0:
+					print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
+				return True
+		return False
+
+	def readyToRem(self, time):
+		for at in self.arrivalAndRunTimes:
+			if at[0]+at[1] == time:
+				return True
+		return False
 
 # Start physical representation
 def physical(allprocesses):
@@ -287,6 +316,7 @@ def LFU(framearray, F = 3):
 
 #Non contiguous algorithm
 def nonContiguous(pList):
+	sorted(pList)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -297,17 +327,32 @@ def nonContiguous(pList):
 	time = 0					# Elapsed in milliseconds
 	completed = 0				# Number of processes completely finished
 
-
-
+	print("time 0ms: Simulator started (Non-contiguous)")
 	while live:
+		
+		for process in pList:
+			if process.readyToRem(time):
+				memFree += process.removeNonContiguous(processTable, time)
+				print("time {0}: Process {1} removed:".format(time, process.processID))
+				printTable(processTable)
+				if process.done:
+					completed += 1
+		for process in pList:
+			if process.readyToAdd(time):
+				success = process.insertNonContiguous(processTable, memFree)
+				if success > 0:
+					memFree -= success
+					print("time {0}ms: Placed process {1}:".format(time, process.processID))
+					printTable(processTable)
+				else:
+					print("time {0}: cannot place process {1} -- skipped!".format(time, process.processID))
 		if completed == len(pList):
 			break
+		time += 1
+	print("time {0}: Simulator ended (Non-contiguous)".format(time))
 
 
 if __name__ == '__main__':
-
-
-
 	allprocesses = []
 	allLines = open(sys.argv[1]).readlines()
 	numprocesses = allLines[0]
@@ -318,7 +363,6 @@ if __name__ == '__main__':
 		arrivalAndRunTimes = []
 		for j in range(2, len(x)):
 			t = x[j].split('/')
-			print(t)
 			t[0] = int(t[0])
 			t[1] = int(t[1])
 			arrivalAndRunTimes.append(t)
@@ -328,5 +372,5 @@ if __name__ == '__main__':
 		print(p)
 
 	physical(allprocesses)
-
+	nonContiguous(allprocesses)
 	virtualMemory()

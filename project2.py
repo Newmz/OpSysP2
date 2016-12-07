@@ -10,6 +10,7 @@ class process:
 		self.arrivalAndRunTimes = arrRun
 		self.startIndex = -1
 		self.endIndex = -1
+		self.pageTable = []
 
 	def __str__(self):
 		retstr = "process object " + self.processID + ":\n\tMemory: "+str(self.memNeeded)+"\n\tArrival/Run Times:\n\t\t"
@@ -17,6 +18,33 @@ class process:
 			retstr += str(i[0]) + "/" +str(i[1]) + "\n\t\t"
 		retstr = retstr[:-2]
 		return retstr
+
+
+	# given a representation of memory (the '.' list), and the number of free slots available,
+	# add a process non-contiguously to the memory.
+	# return -1 if there isn't enough space, or the number of memory slots used otherwise.
+	def insertNonContiguous(self, memory,freespace):
+		# non-contiguous add
+		# loop through all memory and find the first x open slots (however many are necessary)
+		# for each one, change the memory's letter to the process letter and change the process'
+		# page table to include it.
+		# the page table should look like this:
+		#		self.pageTable[0] = <physical memory index>
+		
+		if freespace < self.memNeeded:
+			#failure, so must skip process
+			return -1
+		else:
+			for page in range(len(memory)):
+
+				if memory[page] == '.':
+					memory[page] = self.processID
+					self.pageTable.append(page)
+			return self.memNeeded
+
+	def readyToAdd(self, time):
+		if self.arrivalAndRunTimes[0] == time:
+			return
 
 # Start physical representation
 def physical(allprocesses):
@@ -257,6 +285,25 @@ def LFU(framearray, F = 3):
 	print("End of LFU simulation ({0} page faults)".format(numfaults))
 
 
+#Non contiguous algorithm
+def nonContiguous(pList):
+	tableSize = 256
+
+	processTable = ["." for x in range(tableSize)]
+
+	# Initialize variables
+	live = True					# For simulation status
+	memFree = 256				# Available Memory
+	time = 0					# Elapsed in milliseconds
+	completed = 0				# Number of processes completely finished
+
+
+
+	while live:
+		if completed == len(pList):
+			break
+
+
 if __name__ == '__main__':
 
 
@@ -267,10 +314,14 @@ if __name__ == '__main__':
 	for i in range(1, len(allLines)):
 		x = allLines[i].split()
 		processID = x[0]
-		memNeeded = x[1]
+		memNeeded = int(x[1])
 		arrivalAndRunTimes = []
 		for j in range(2, len(x)):
-			arrivalAndRunTimes.append(x[j].split('/'))
+			t = x[j].split('/')
+			print(t)
+			t[0] = int(t[0])
+			t[1] = int(t[1])
+			arrivalAndRunTimes.append(t)
 		allprocesses.append(process(processID,memNeeded,arrivalAndRunTimes))
 
 	for p in allprocesses:

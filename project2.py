@@ -27,7 +27,7 @@ class process:
 	# given a representation of memory (the '.' list), and the number of free slots available,
 	# add a process non-contiguously to the memory.
 	# return -1 if there isn't enough space, or the number of memory slots used otherwise.
-	def insertNonContiguous(self, memory,freespace):
+	def insertNonContiguous(self, memory, freespace):
 		# non-contiguous add
 		# loop through all memory and find the first x open slots (however many are necessary)
 		# for each one, change the memory's letter to the process letter and change the process'
@@ -37,7 +37,7 @@ class process:
 		
 		if freespace < self.memNeeded:
 			#failure, so must skip process
-			print("process {0} failure in adding".format(self.processID))
+			#print("process {0} failure in adding".format(self.processID))
 			return -1
 		else:
 			temp = 0
@@ -78,11 +78,69 @@ class process:
 				return True
 		return False
 
+def defrag(memory, pList, t_memmove, time):
+	# input: the list of memory, the list of processes, the time it takes to move one unit of memory (in ms), and the current time of the sim
+	# output: the number of seconds the defrag took
+	# this function DOES NOT check whether or not there is enough free space to add a process.
+	# It just performs the defrag and recomputes the arrival times, whether or not it's needed. 
+
+	#first, make a map of the processIDs to the processes themselves (speeds up things for later)
+	pMap = {}
+	for p in pList:
+		pMap[p.processID] = p
+
+	#keep track of the lowest index of free memory and the time it has taken to defrag so far
+	firstFreeLoc = None
+	timeTaken = 0
+
+	unit = 0
+	while unit < len(memory):
+		if memory[unit] != '.':
+			#if we find a used slot of memory, we shift that process down
+			if firstFreeLoc == None:
+				#print("\t skipping")
+				unit +=1
+				continue
+
+			start = unit
+			currentProcess = memory[unit]
+			diff = start - firstFreeLoc  # offset by which we shift the process
+			pMap[currentProcess].startIndex -= diff
+			pMap[currentProcess].endIndex -= diff
+
+			while unit < start + pMap[currentProcess].memNeeded and unit < len(memory):
+				#print(start, diff, unit)
+				memory[unit-diff] = currentProcess
+				memory[unit] = '.'
+				timeTaken += t_memmove
+				unit+=1
+				#diff+=1
+
+			#printTable(memory)
+			firstFreeLoc += pMap[currentProcess].memNeeded
+		else:
+			if firstFreeLoc == None:
+				#print("\tFFL is now {0}".format(unit))
+				firstFreeLoc = unit
+			unit += 1
+			continue
+
+	#this part will increase the arrival times of all processes accordingly (namely, if they enter during defrag,
+	#they are pushed back by the length of the defrag).
+	for p in pList:
+		for arrivals in p.arrivalAndRunTimes:
+			if arrivals[0] > time:
+				arrivals[0] += timeTaken
+	return timeTaken
+
+
+
+
+
 # Start physical representation
 def physical(allprocesses):
 
-	# Single, one dimensional character array that will store only letters
-	# Creates a 256 characters, all set to "."
+	sorted(allprocesses)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -92,17 +150,21 @@ def physical(allprocesses):
 	memFree = 256				# Available Memory
 	time = 0					# Elapsed in milliseconds
 	completed = 0				# Number of processes completely finished
+	scanStart = 0
 
-	processTable = insertProcess(processTable, allprocesses[0], memFree, 0, 44)
-	printTable(processTable)
-	processTable, bytesRemoved = removeProcess(processTable, allprocesses[0])
-	printTable(processTable)
-
-	# Start Sim Loop
 	while live:
-
-
+		#	GENERAL pseudocode
+		#
+		#	at current timestep:
+		#		if any processes need to be removed, remove them (I wrote a class function that checks whether or need it needs to be removed)
+		#		if any processes need to be added, try to add them (I also wrote a class function for this check)
+		#			if there lacks space then skip it
+		#			if there is space but not a contiguous block, then defrag
+		#		if the number of completed processes is equal to the length of allprocesses, then live = false
 		live = False
+
+
+		#live = False
 	# End Sim Loop
 # End physical representation
 
@@ -130,30 +192,31 @@ def printTable(processTable):
 
 # insertProcess,
 #	input: a processTable and targetProcess,
-#	output: processTable with targetProcess inserted.
+#	output: The number of units of memory used.
 # Start process insertion
 def insertProcess(processTable, targetProcess, memFree, startIndex, endIndex):
 	# Decrement memory required
-	memLeft = (int)(targetProcess.memNeeded)
+	memLeft = (targetProcess.memNeeded)
 
 	# Loop through processTable and add processID between indices
 	if memLeft > memFree:
 		print("Error, no memory available")
+		return -1
 	else:
 		for i in range(startIndex, endIndex):
 			if processTable[i] != ".":
-				print ("Error, memory already allocated in {1}".format(i))
+				print ("Error, memory already allocated in {0}".format(i))
 			else:
 				processTable[i] = targetProcess.processID
 
-	return processTable
-# End process insertion
+	return targetProcess.memNeeded
+
 
 # removeProcess
-#	input: a processTable and targetProcess,
-#	output: processTable with targetProcess removed.
+#	input: a processTable and targetProcess and the time of sim,
+#	output: the number of units of memory freed.
 # Start process deletion
-def removeProcess(processTable, targetProcess):
+def removeProcess(processTable, targetProcess, time):
 	# Initialize counter for # of bytes removed
 	bytesRemoved = 0
 
@@ -163,8 +226,14 @@ def removeProcess(processTable, targetProcess):
 			processTable[i] = "."
 			bytesRemoved += 1
 
-	return processTable, bytesRemoved
-# End process deletion
+	# PETER, this code is new. when a process is removed for the last time, its "done" bool is set to True.
+	# check to see if a process is 'done' every time you remove a process (outside this function).
+	# see non-contiguous for an example
+	if time == targetProcess.arrivalAndRunTimes[-1][1] + targetProcess.arrivalAndRunTimes[-1][0]:
+		targetProcess.done = True
+
+	return bytesRemoved
+
 
 # Handles all the virtual memory functions
 #   reads in vitual memory frames

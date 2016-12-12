@@ -305,8 +305,9 @@ def OPT(framearray, F = 3):
 	for i in range(len(framearray)):
 		# Frame not already in memory
 		if framearray[i] not in mem:
-			# No page fault
+			# No victim page
 			if len(mem) < 3:
+				numfaults += 1
 				mem.append(framearray[i])
 				print("referencing page {0} [mem:".format(framearray[i]), end='')
 				for y in mem:
@@ -315,7 +316,7 @@ def OPT(framearray, F = 3):
 					print(" .", end='')
 				print("] PAGE FAULT (no victim page)")
 
-			# Page fault
+			# With victim page
 			else:
 				numfaults += 1
 				# Read memory into new array
@@ -351,8 +352,9 @@ def LRU(framearray, F  = 3):
 	for i in range(len(framearray)):
 		# Frame not already in memory
 		if framearray[i] not in mem:
-			# No page fault
+			# No victim page
 			if len(mem) < 3:
+				numfaults += 1
 				mem.append(framearray[i])
 				print("referencing page {0} [mem:".format(framearray[i]), end='')
 				for y in mem:
@@ -361,7 +363,7 @@ def LRU(framearray, F  = 3):
 					print(" .", end='')
 				print("] PAGE FAULT (no victim page)")
 
-			# Page fault
+			# With victim page
 			else:
 				numfaults += 1
 				# Read memory into new array
@@ -393,8 +395,9 @@ def LFU(framearray, F = 3):
 	for i in range(len(framearray)):
 		# Frame not already in memory
 		if framearray[i] not in mem:
-			# No page fault
+			# No victim page
 			if len(mem) < 3:
+				numfaults += 1
 				mem.append(framearray[i])
 				uses.append(1)
 				print("referencing page {0} [mem:".format(framearray[i]), end='')
@@ -404,7 +407,7 @@ def LFU(framearray, F = 3):
 					print(" .", end='')
 				print("] PAGE FAULT (no victim page)")
 
-			# Page fault
+			# With victim page
 			else:
 				numfaults += 1
 				# Find index of smallest with tiebreaker
@@ -987,9 +990,9 @@ if __name__ == '__main__':
 	for p in allprocesses:
 		print(p)
 
-	physical(allprocesses)
+	#physical(allprocesses)
 	#nextContiguous(allprocesses)
 	#bestContiguous(allprocesses)
-	worstContiguous(allprocesses)
+	#worstContiguous(allprocesses)
 	#nonContiguous(allprocesses)
-	#virtualMemory()
+	virtualMemory()

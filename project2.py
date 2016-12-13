@@ -95,7 +95,7 @@ class process:
 		# returns true if the process is to be added at the given time, false otherwise
 		for at in range(len(self.arrivalAndRunTimes)):
 			if self.arrivalAndRunTimes[at][0] == time:
-				
+
 				#print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
 				if self.defragged != True:
 					print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
@@ -613,20 +613,20 @@ def allPartitions(processTable):
 	currentLen = 0
 	for i in range(len(processTable)):
 		if (processTable[i] == '.'):
-			
+
 			if currentStart == -1:
 				currentStart = i
 			currentLen += 1
 		else:
 			if (currentLen > 0):
-				
+
 				partitions.append([currentLen, currentStart])
 				currentLen = 0
 				currentStart = -1
 	if (currentLen > 0):
 		partitions.append([currentLen, currentStart])
 	return partitions
-				
+
 
 
 #Contiguous algorithm
@@ -833,7 +833,7 @@ def getWorst(processTable, process, largestRegion, freeTotal):
 			break
 
 
-	return largestRegion, startIndex
+	return largestRegion, startIndex, foundRegion, freeTotal
 
 #Contiguous algorithm
 def worstContiguous(pList):
@@ -883,7 +883,6 @@ def worstContiguous(pList):
 			if process.readyToAdd(time):
 				# Initialize variables
 				process.active = True
-				process.active = True
 				cellsChecked = 0
 				i = 0
 				freeTotal = 0
@@ -895,66 +894,8 @@ def worstContiguous(pList):
 				endIndex = 0
 
 				while cellsChecked < len(processTable):
-					largestRegion, startIndex = getWorst(processTable, process, largestRegion, freeTotal)
+					largestRegion, startIndex, foundRegion, freeTotal = getWorst(processTable, process, largestRegion, freeTotal)
 					# Find largest region
-					regions = []
-					startIndex = 0
-					freeCount = 0
-					for worstTarget in range(len(processTable)):
-						# Iterate through memory frames
-						if processTable[worstTarget] == ".":
-							freeCount += 1
-							freeTotal += 1
-						else:
-							if freeCount > 0:
-								regions.append((freeCount, startIndex))
-							freeCount = 0
-							startIndex = worstTarget + 1
-
-					if freeCount > 0:
-						regions.append((freeCount, startIndex))
-
-					# Sort regions
-					regions = sorted(regions, reverse=True)
-					#print(regions)
-					# Iterate through regions and find worst fit for insertion
-					foundRegion = False
-					for selected in range(len(regions)):
-						# Free memory >= space needed && free memory < current largestRegion
-						# print(regions[selected][0])
-						# print(process.memNeeded)
-						# print(largestRegion)
-						if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] >= largestRegion)):
-							# print("Found a good region on region of size {0}".format(regions[selected][0]))
-							largestRegion = regions[selected][0]
-							startIndex = regions[selected][1]
-							foundRegion = True
-							break
-
-					# Look for defrag if space available but no regions free
-					if foundRegion == False:
-						if ((freeTotal >= process.memNeeded) and (process.memNeeded >= largestRegion)):
-							print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
-							defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
-
-							# Edit all process arrival/run times due to defrag
-							for process in allprocesses:
-								for arrUnd in process.arrivalAndRunTimes:
-									if (process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1])):
-										arrUnd[1] += defragTime
-
-							startLocations.pop(0)
-							time += defragTime
-
-							# Reset Values
-							startIndex = startLocations[len(startLocations) - 1]
-							endIndex = startIndex
-							i = startIndex
-							cellsChecked = 0
-							freeCount = 0
-							freeTotal = 0
-							printTable(processTable)
-							largestRegion, startIndex = getWorst(processTable, process, largestRegion, freeTotal)
 
 					# Update current indices
 					process.startIndex = startIndex
@@ -993,13 +934,39 @@ def worstContiguous(pList):
 					printTable(processTable)
 				#Reset success
 				success = 0
+				# Look for defrag if space available but no regions free
+				if foundRegion == False:
+					if ((freeTotal >= process.memNeeded) and (process.memNeeded >= largestRegion)):
+						print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
+						defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
+
+						# Edit all process arrival/run times due to defrag
+						for process in allprocesses:
+							for arrUnd in process.arrivalAndRunTimes:
+								if (process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1])):
+									arrUnd[1] += defragTime
+								else:
+									arrUnd[0] += defragTime
+
+						startLocations.pop(0)
+						time += defragTime
+
+						# Reset Values
+						startIndex = startLocations[len(startLocations) - 1]
+						endIndex = startIndex
+						i = startIndex
+						cellsChecked = 0
+						freeCount = 0
+						freeTotal = 0
+						printTable(processTable)
+						largestRegion, startIndex, foundRegion, freeTotal = getWorst(processTable, process, largestRegion, freeTotal)
 		# End process insertion
 
 		#if we've finished all processes (all have exited for the last time) then we are done
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous -- Bext Fit)".format(time))
+	print("time {0}ms: Simulator ended (Contiguous -- Worst Fit)".format(time))
 
 
 #Non contiguous algorithm
@@ -1074,7 +1041,7 @@ if __name__ == '__main__':
 	physical(allprocesses)
 
 	#nextContiguous(allprocesses)
-	bestContig(allprocesses)
-	#worstContiguous(allprocesses)
+	#bestContig(allprocesses)
+	worstContiguous(allprocesses)
 	#nonContiguous(allprocesses)
 	#virtualMemory()

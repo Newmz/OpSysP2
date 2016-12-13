@@ -1,3 +1,7 @@
+# Timothy Newman, Peter Ko, Zach Biltech
+# Operating Systems - Project 2
+# Memory Management Simulation
+
 import sys
 import os
 import time
@@ -414,7 +418,7 @@ def LFU(framearray, F = 3):
 
 #Contiguous algorithm
 def nextContiguous(pList):
-	sorted(pList)
+	pList = sorted(pList)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -565,7 +569,7 @@ def nextContiguous(pList):
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous (Next-Fit))\n".format(time))
+	print("time {0}ms: Simulator ended (Contiguous -- Next-Fit)\n".format(time))
 
 def getBest(processTable, process, smallestRegion, freeTotal):
 	# Find largest region
@@ -605,7 +609,7 @@ def getBest(processTable, process, smallestRegion, freeTotal):
 
 #Contiguous algorithm
 def bestContiguous(pList):
-	sorted(pList)
+	pList = sorted(pList)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -776,7 +780,7 @@ def getWorst(processTable, process, largestRegion, freeTotal):
 
 #Contiguous algorithm
 def worstContiguous(pList):
-	sorted(pList)
+	pList = sorted(pList)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -908,11 +912,10 @@ def worstContiguous(pList):
 			break
 		time += 1
 	print("time {0}ms: Simulator ended (Contiguous -- Worst-Fit)\n".format(time))
-	print()
 
 #Non contiguous algorithm
 def nonContiguous(pList):
-	sorted(pList)
+	pList = sorted(pList)
 	tableSize = 256
 
 	processTable = ["." for x in range(tableSize)]
@@ -978,18 +981,18 @@ if __name__ == '__main__':
 	#this first bit parses the file with all of the process info
 	allprocesses = parse(sys.argv[1])
 
-	for p in allprocesses:
-		print(p)
-	sorted(allprocesses, key = ltStart)
-	for p in allprocesses:
-		print(p)
+	# for p in allprocesses:
+	# 	print(p)
+	# sorted(allprocesses, key = ltStart)
+	# for p in allprocesses:
+	# 	print(p)
 
-	# nextContiguous(allprocesses)
-	# allprocesses = parse(sys.argv[1])
-	# bestContiguous(allprocesses)
-	# allprocesses = parse(sys.argv[1])
-	# worstContiguous(allprocesses)
-	# allprocesses = parse(sys.argv[1])
-	# nonContiguous(allprocesses)
-	# allprocesses = parse(sys.argv[1])
-	# virtualMemory()
+	nextContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	bestContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	worstContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	nonContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	virtualMemory()

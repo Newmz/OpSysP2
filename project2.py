@@ -181,9 +181,8 @@ def defrag(memory, pList, t_memmove, time, startLocations):
 
 	return timeTaken
 
-
-
-
+def ltStart(p1):
+	return p1.startIndex
 
 # printTable,
 #	input: a processTable
@@ -978,14 +977,18 @@ if __name__ == '__main__':
 	#this first bit parses the file with all of the process info
 	allprocesses = parse(sys.argv[1])
 
-	#
+	for p in allprocesses:
+		print(p)
+	sorted(allprocesses, key = ltStart)
+	for p in allprocesses:
+		print(p)
 
-	nextContiguous(allprocesses)
-	allprocesses = parse(sys.argv[1])
-	bestContiguous(allprocesses)
-	allprocesses = parse(sys.argv[1])
-	worstContiguous(allprocesses)
-	allprocesses = parse(sys.argv[1])
-	nonContiguous(allprocesses)
-	allprocesses = parse(sys.argv[1])
-	virtualMemory()
+	# nextContiguous(allprocesses)
+	# allprocesses = parse(sys.argv[1])
+	# bestContiguous(allprocesses)
+	# allprocesses = parse(sys.argv[1])
+	# worstContiguous(allprocesses)
+	# allprocesses = parse(sys.argv[1])
+	# nonContiguous(allprocesses)
+	# allprocesses = parse(sys.argv[1])
+	# virtualMemory()

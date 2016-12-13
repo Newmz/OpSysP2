@@ -185,38 +185,6 @@ def defrag(memory, pList, t_memmove, time, startLocations):
 
 
 
-# Start physical representation
-def physical(allprocesses):
-
-	sorted(allprocesses)
-	tableSize = 256
-
-	processTable = ["." for x in range(tableSize)]
-
-	# Initialize variables
-	live = True					# For simulation status
-	memFree = 256				# Available Memory
-	time = 0					# Elapsed in milliseconds
-	completed = 0				# Number of processes completely finished
-	scanStart = 0
-
-	while live:
-		#	GENERAL pseudocode
-		#
-		#	at current timestep:
-		#		if any processes need to be removed, remove them (I wrote a class function that checks whether or need it needs to be removed)
-		#		if any processes need to be added, try to add them (I also wrote a class function for this check)
-		#			if there lacks space then skip it
-		#			if there is space but not a contiguous block, then defrag
-		#		if the number of completed processes is equal to the length of allprocesses, then live = false
-		live = False
-
-
-		#live = False
-	# End Sim Loop
-# End physical representation
-
-
 # printTable,
 #	input: a processTable
 #	output: prints processTable and returns 0 on success
@@ -600,33 +568,6 @@ def nextContiguous(pList):
 		time += 1
 	print("time {0}ms: Simulator ended (Contiguous (Next-Fit))".format(time))
 
-# for each process: remove if possible
-# for each process: if it needs to be added:
-#		find all free partitions
-#		if there is not a partition that is big enough, but there is enough space:
-#			defrag
-#		take the smallest of the free partitions
-#		insert
-def allPartitions(processTable):
-	partitions = []
-	currentStart = -1
-	currentLen = 0
-	for i in range(len(processTable)):
-		if (processTable[i] == '.'):
-
-			if currentStart == -1:
-				currentStart = i
-			currentLen += 1
-		else:
-			if (currentLen > 0):
-
-				partitions.append([currentLen, currentStart])
-				currentLen = 0
-				currentStart = -1
-	if (currentLen > 0):
-		partitions.append([currentLen, currentStart])
-	return partitions
-
 def getBest(processTable, process, smallestRegion, freeTotal):
 	# Find largest region
 	regions = []
@@ -968,7 +909,6 @@ def worstContiguous(pList):
 			break
 		time += 1
 	print("time {0}ms: Simulator ended (Contiguous -- Worst-Fit)".format(time))
-
 
 #Non contiguous algorithm
 def nonContiguous(pList):

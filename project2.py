@@ -12,6 +12,7 @@ class process:
 		self.endIndex = -1 #int
 		self.pageTable = [] #list(int)
 		self.done = False #bool
+		self.hasEntered = False
 
 	def __str__(self):
 		retstr = "process object " + self.processID + ":\n\tMemory: "+str(self.memNeeded)+"\n\tArrival/Run Times:\n\t\t"
@@ -66,8 +67,8 @@ class process:
 		# returns true if the process is to be added at the given time, false otherwise
 		for at in range(len(self.arrivalAndRunTimes)):
 			if self.arrivalAndRunTimes[at][0] == time:
-				if at == 0:
-					print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
+				
+				print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
 				return True
 		return False
 
@@ -405,9 +406,11 @@ def nonContiguous(pList):
 		for process in pList:
 			if process.readyToRem(time):
 				#this remove function returns the number of memory slots freed up
-				memFree += process.removeNonContiguous(processTable, time)
-				print("time {0}: Process {1} removed:".format(time, process.processID))
-				printTable(processTable)
+				success = process.removeNonContiguous(processTable, time)
+				memFree += success
+				if (success):
+					print("time {0}ms: Process {1} removed:".format(time, process.processID))
+					printTable(processTable)
 				if process.done:
 					completed += 1
 		#once all due processes have been removed, we can add new ones at this time step
@@ -419,12 +422,13 @@ def nonContiguous(pList):
 					print("time {0}ms: Placed process {1}:".format(time, process.processID))
 					printTable(processTable)
 				else:
-					print("time {0}: cannot place process {1} -- skipped!".format(time, process.processID))
+					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
+					printTable(processTable)
 		#if we've finished all processes (all have exited for the last time) then we are done
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}: Simulator ended (Non-contiguous)".format(time))
+	print("time {0}ms: Simulator ended (Non-contiguous)".format(time), end="")
 
 
 if __name__ == '__main__':
@@ -445,9 +449,8 @@ if __name__ == '__main__':
 			arrivalAndRunTimes.append(t)
 		allprocesses.append(process(processID,memNeeded,arrivalAndRunTimes))
 
-	for p in allprocesses:
-		print(p)
+	#
 
 	physical(allprocesses)
 	nonContiguous(allprocesses)
-	virtualMemory()
+	#virtualMemory()

@@ -607,35 +607,26 @@ def nextContiguous(pList):
 #			defrag
 #		take the smallest of the free partitions
 #		insert
-
-def bestContiguous(pList):
-	sorted(pList)
-	tableSize = 256
-
-	processTable = ["." for x in range(tableSize)]
-
-	# Initialize variables
-	live = True					# For simulation status
-	memFree = 256				# Available Memory
-	time = 0					# Elapsed in milliseconds
-	completed = 0				# Number of processes completely finished
-
-	while live:
-		for process in pList:
-			if process.readyToRem(time):
-				success = process.removeProcess(processTable, process, time)
-				memFree += success
-				if (success):
-					if (success):
-					print("time {0}ms: Process {1} removed:".format(time, process.processID))
-					printTable(processTable)
-				if process.done:
-					completed += 1
-		for process in pList:
-			if process.readyToAdd(time):
-				#get list of all partitions
-				#if there are no partitions large enough, defrag
-				#add process
+def allPartitions(processTable):
+	partitions = []
+	currentStart = -1
+	currentLen = 0
+	for i in range(len(processTable)):
+		if (processTable[i] == '.'):
+			
+			if currentStart == -1:
+				currentStart = i
+			currentLen += 1
+		else:
+			if (currentLen > 0):
+				
+				partitions.append([currentLen, currentStart])
+				currentLen = 0
+				currentStart = -1
+	if (currentLen > 0):
+		partitions.append([currentLen, currentStart])
+	return partitions
+				
 
 
 #Contiguous algorithm
@@ -736,7 +727,7 @@ def bestContiguous(pList):
 					print("smallestRegion = {0}".format(smallestRegion))
 
 					# Look for defrag if space available but no regions free
-					if !foundRegion:
+					if foundRegion == False:
 						if ((freeTotal >= process.memNeeded)):
 
 							print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
@@ -1083,7 +1074,7 @@ if __name__ == '__main__':
 	physical(allprocesses)
 
 	#nextContiguous(allprocesses)
-	bestContiguous(allprocesses)
+	bestContig(allprocesses)
 	#worstContiguous(allprocesses)
 	#nonContiguous(allprocesses)
 	#virtualMemory()

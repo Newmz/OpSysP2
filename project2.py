@@ -565,7 +565,7 @@ def nextContiguous(pList):
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous (Next-Fit))".format(time))
+	print("time {0}ms: Simulator ended (Contiguous (Next-Fit))\n".format(time))
 
 def getBest(processTable, process, smallestRegion, freeTotal):
 	# Find largest region
@@ -736,7 +736,7 @@ def bestContiguous(pList):
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous -- Best-Fit)".format(time))
+	print("time {0}ms: Simulator ended (Contiguous -- Best-Fit)\n".format(time))
 
 def getWorst(processTable, process, largestRegion, freeTotal):
 	# Find largest region
@@ -907,7 +907,8 @@ def worstContiguous(pList):
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous -- Worst-Fit)".format(time))
+	print("time {0}ms: Simulator ended (Contiguous -- Worst-Fit)\n".format(time))
+	print()
 
 #Non contiguous algorithm
 def nonContiguous(pList):
@@ -953,7 +954,7 @@ def nonContiguous(pList):
 			break
 		time += 1
 
-	print("time {0}ms: Simulator ended (Non-contiguous)".format(time), end="")
+	print("time {0}ms: Simulator ended (Non-contiguous)\n".format(time))
 
 def parse(filename):
 	allprocesses = []

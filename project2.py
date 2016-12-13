@@ -13,12 +13,9 @@ class process:
 		self.pageTable = [] #list(int)
 		self.order = 0 #int
 		self.done = False #bool
-<<<<<<< HEAD
 		self.hasEntered = False
-=======
 		self.active = False #bool
 		self.defragged = False
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
 
 	def __str__(self):
 		retstr = "process object " + self.processID + ":\n\tMemory: "+str(self.memNeeded)+"\n\tArrival/Run Times:\n\t\t"
@@ -98,13 +95,10 @@ class process:
 		# returns true if the process is to be added at the given time, false otherwise
 		for at in range(len(self.arrivalAndRunTimes)):
 			if self.arrivalAndRunTimes[at][0] == time:
-<<<<<<< HEAD
 				
-				print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
-=======
+				#print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
 				if self.defragged != True:
 					print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, self.processID, self.memNeeded))
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
 				return True
 		return False
 
@@ -998,17 +992,11 @@ def nonContiguous(pList):
 		for process in pList:
 			if process.readyToRem(time):
 				#this remove function returns the number of memory slots freed up
-<<<<<<< HEAD
 				success = process.removeNonContiguous(processTable, time)
 				memFree += success
 				if (success):
 					print("time {0}ms: Process {1} removed:".format(time, process.processID))
 					printTable(processTable)
-=======
-				memFree += process.removeNonContiguous(processTable, time)
-				print("time {0}ms: Process {1} removed:".format(time, process.processID))
-				printTable(processTable)
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
 				if process.done:
 					completed += 1
 		#once all due processes have been removed, we can add new ones at this time step
@@ -1020,21 +1008,17 @@ def nonContiguous(pList):
 					print("time {0}ms: Placed process {1}:".format(time, process.processID))
 					printTable(processTable)
 				else:
-<<<<<<< HEAD
+
 					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
 					printTable(processTable)
-=======
-					print("time {0}ms: cannot place process {1} -- skipped!".format(time, process.processID))
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
+
 		#if we've finished all processes (all have exited for the last time) then we are done
 		if completed == len(pList):
 			break
 		time += 1
-<<<<<<< HEAD
+
 	print("time {0}ms: Simulator ended (Non-contiguous)".format(time), end="")
-=======
-	print("time {0}ms: Simulator ended (Non-contiguous)".format(time))
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
+
 
 
 if __name__ == '__main__':

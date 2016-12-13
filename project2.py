@@ -1043,12 +1043,9 @@ if __name__ == '__main__':
 	#
 
 	physical(allprocesses)
-<<<<<<< HEAD
-	nonContiguous(allprocesses)
-=======
+
 	#nextContiguous(allprocesses)
 	bestContiguous(allprocesses)
 	#worstContiguous(allprocesses)
 	#nonContiguous(allprocesses)
->>>>>>> a04a53d6f31ba892a24cd345009e829a45686e08
 	#virtualMemory()

@@ -627,7 +627,41 @@ def allPartitions(processTable):
 		partitions.append([currentLen, currentStart])
 	return partitions
 
+def getBest(processTable, process, smallestRegion, freeTotal):
+	# Find largest region
+	regions = []
+	startIndex = 0
+	freeCount = 0
+	for bestTarget in range(len(processTable)):
+		# Iterate through memory frames
+		if processTable[bestTarget] == ".":
+			freeCount += 1
+			freeTotal += 1
+		else:
+			if freeCount > 0:
+				regions.append((freeCount, startIndex))
+			freeCount = 0
+			startIndex = bestTarget + 1
 
+	if freeCount > 0:
+		regions.append((freeCount, startIndex))
+
+	# Sort regions
+	regions = sorted(regions)
+	#print(regions)
+	# Iterate through regions and find worst fit for insertion
+	foundRegion = False
+	for selected in range(len(regions)):
+		# Free memory >= space needed && free memory < current largestRegion
+		if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] < smallestRegion)):
+			# print("Found a good region on region of size {0}".format(regions[selected][0]))
+			smallestRegion = regions[selected][0]
+			startIndex = regions[selected][1]
+			foundRegion = True
+			break
+
+
+	return smallestRegion, startIndex, foundRegion, freeTotal
 
 #Contiguous algorithm
 def bestContiguous(pList):
@@ -670,212 +704,6 @@ def bestContiguous(pList):
 		# Start process insertion
 		success = 0
 		if len(startLocations) > 1:
-			startIndex = startLocations[-1]
-			endIndex = startIndex
-
-		for process in pList:
-			if process.readyToAdd(time):
-				# Initialize variables
-				cellsChecked = 0
-				i = 0
-				freeTotal = 0
-				smallestRegion = memFree
-
-				# Start Best Fit Loop
-				startIndex = 0
-				endIndex = 0
-
-				while cellsChecked < len(processTable):
-					# Find smallest region
-					# print("Finding Regions")
-					regions = []
-					startIndex = 0
-					freeCount = 0
-
-					for bestTarget in range(len(processTable)):
-						# Iterate through memory frames
-						if processTable[bestTarget] == ".":
-							freeCount += 1
-							freeTotal += 1
-						else:
-							if freeCount > 0:
-								regions.append((freeCount, startIndex))
-							freeCount = 0
-							startIndex = bestTarget + 1
-
-					if freeCount > 0:
-						regions.append((freeCount, startIndex))
-
-					# Sort regions
-					regions = sorted(regions)
-
-					# Iterate through regions and find best fit for insertion
-					foundRegion = False
-					for selected in range(len(regions)):
-						# Free memory >= space needed && free memory < current smallestRegion
-						if ((regions[selected][0] >= process.memNeeded)):
-							#print("Found a good region on region of size {0}".format(regions[selected][0]))
-							smallestRegion = regions[selected][0]
-							startIndex = regions[selected][1]
-							foundRegion = True
-							break
-
-
-					print(startIndex)
-					print(regions)
-					print("Freetotal = {0}".format(freeTotal))
-					print("smallestRegion = {0}".format(smallestRegion))
-
-					# Look for defrag if space available but no regions free
-					if foundRegion == False:
-						if ((freeTotal >= process.memNeeded)):
-
-							print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
-							defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
-							process.active = False
-							process.defragged = True
-
-							# Edit all process arrival/run times due to defrag
-							for process in allprocesses:
-								for arrUnd in process.arrivalAndRunTimes:
-									if (process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1])):
-										arrUnd[1] += defragTime
-									else:
-										arrUnd[0] += defragTime
-									print (process.arrivalAndRunTimes)
-
-							startLocations.pop(0)
-							time += defragTime - 1
-
-							# Reset Values
-							startIndex = startLocations[len(startLocations) - 1]
-							endIndex = startIndex
-							i = startIndex
-							cellsChecked = 0
-							freeCount = 0
-							freeTotal = 0
-							printTable(processTable)
-							break
-
-					# Update current indices
-					process.startIndex = startIndex
-					endIndex = startIndex + process.memNeeded
-					process.endIndex = endIndex
-
-					# Insert processes into memory
-					success = insertProcess(processTable, process, memFree, startIndex, endIndex)
-					process.active = True
-
-					# Update most list of most recent indices
-					startLocations.append(endIndex)
-					break
-
-					endIndex = i+1
-					cellsChecked += 1
-					i += 1
-
-
-				# End Next Fit Loop
-				# Error Check
-				if success > 0:
-					memFree -= success
-					print("time {0}ms: Placed process {1}:".format(time, process.processID))
-					printTable(processTable)
-				else:
-					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
-					# Remove set of arrival/run times
-					process.arrivalAndRunTimes.pop(0)
-					if len(process.arrivalAndRunTimes) == 0:
-						process.done = True
-						completed += 1
-					printTable(processTable)
-				#Reset success
-				success = 0
-		# End process insertion
-
-		#if we've finished all processes (all have exited for the last time) then we are done
-		if completed == len(pList):
-			break
-		time += 1
-	print("time {0}ms: Simulator ended (Contiguous -- Best-Fit)".format(time))
-
-def getWorst2(processTable, process, smallestRegion, freeTotal):
-	# Find largest region
-	regions = []
-	startIndex = 0
-	freeCount = 0
-	for bestTarget in range(len(processTable)):
-		# Iterate through memory frames
-		if processTable[bestTarget] == ".":
-			freeCount += 1
-			freeTotal += 1
-		else:
-			if freeCount > 0:
-				regions.append((freeCount, startIndex))
-			freeCount = 0
-			startIndex = bestTarget + 1
-
-	if freeCount > 0:
-		regions.append((freeCount, startIndex))
-
-	# Sort regions
-	regions = sorted(regions)
-	#print(regions)
-	# Iterate through regions and find worst fit for insertion
-	foundRegion = False
-	for selected in range(len(regions)):
-		# Free memory >= space needed && free memory < current largestRegion
-		if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] > smallestRegion)):
-			# print("Found a good region on region of size {0}".format(regions[selected][0]))
-			smallestRegion = regions[selected][0]
-			startIndex = regions[selected][1]
-			foundRegion = True
-			break
-
-
-	return smallestRegion, startIndex, foundRegion, freeTotal
-
-#Contiguous algorithm
-def worstContiguous2(pList):
-	sorted(pList)
-	tableSize = 256
-
-	processTable = ["." for x in range(tableSize)]
-
-	# Initialize variables
-	live = True					# For simulation status
-	memFree = 256				# Available Memory
-	time = 0					# Elapsed in milliseconds
-	completed = 0				# Number of processes completely finished
-
-	startLocations = [0]
-
-	# Start simulation
-	print("time 0ms: Simulator started (Contiguous -- Worst Fit)")
-	while live:
-		# Start process removal
-		# First we want to check if there are any process that need to be removed at this time step
-		for process in pList:
-			if process.readyToRem(time):
-				process.active = False
-				#this remove function returns the number of memory slots freed up
-				memFree += removeProcess(processTable, process, time)
-				print("time {0}ms: Process {1} removed:".format(time, process.processID))
-
-				for f in startLocations:
-					if process.endIndex == f:
-						startLocations.remove(int(process.endIndex))
-				process.startIndex = -1
-				process.endIndex = -1
-				printTable(processTable)
-				if process.done:
-					completed += 1
-		# once all due processes have been removed, we can add new ones at this time step
-		# End process removal
-
-		# Start process insertion
-		success = 0
-		if len(startLocations) > 1:
 			startIndex = startLocations[len(startLocations) - 1]
 			endIndex = startIndex
 
@@ -894,7 +722,7 @@ def worstContiguous2(pList):
 				endIndex = 0
 
 				while cellsChecked < len(processTable):
-					largestRegion, startIndex, foundRegion, freeTotal = getWorst2(processTable, process, largestRegion, freeTotal)
+					largestRegion, startIndex, foundRegion, freeTotal = getBest(processTable, process, largestRegion, freeTotal)
 					# Find largest region
 
 					# Update current indices
@@ -938,7 +766,7 @@ def worstContiguous2(pList):
 						freeCount = 0
 						freeTotal = 0
 						printTable(processTable)
-						largestRegion, startIndex, foundRegion, freeTotal = getWorst2(processTable, process, largestRegion, freeTotal)
+						largestRegion, startIndex, foundRegion, freeTotal = getBest(processTable, process, largestRegion, freeTotal)
 						success = insertProcess(processTable, process, memFree, startIndex, endIndex)
 
 				# End Next Fit Loop
@@ -968,7 +796,7 @@ def worstContiguous2(pList):
 		if completed == len(pList):
 			break
 		time += 1
-	print("time {0}ms: Simulator ended (Contiguous -- Worst-Fit)".format(time))
+	print("time {0}ms: Simulator ended (Contiguous -- Best-Fit)".format(time))
 
 def getWorst(processTable, process, largestRegion, freeTotal):
 	# Find largest region
@@ -1215,7 +1043,7 @@ if __name__ == '__main__':
 
 	#nextContiguous(allprocesses)
 	#bestContig(allprocesses)
-	#worstContiguous2(allprocesses)
-	worstContiguous(allprocesses)
+	bestContiguous(allprocesses)
+	#worstContiguous(allprocesses)
 	#nonContiguous(allprocesses)
 	#virtualMemory()

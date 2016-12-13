@@ -1016,13 +1016,9 @@ def nonContiguous(pList):
 
 	print("time {0}ms: Simulator ended (Non-contiguous)".format(time), end="")
 
-
-
-if __name__ == '__main__':
-
-	#this first bit parses the file with all of the process info
+def parse(filename):
 	allprocesses = []
-	allLines = open(sys.argv[1]).readlines()
+	allLines = open(filename).readlines()
 	numprocesses = allLines[0]
 	for i in range(1, len(allLines)):
 		x = allLines[i].split()
@@ -1036,14 +1032,21 @@ if __name__ == '__main__':
 			arrivalAndRunTimes.append(t)
 		print (arrivalAndRunTimes)
 		allprocesses.append(process(processID,memNeeded,arrivalAndRunTimes))
+	return allprocesses
+
+if __name__ == '__main__':
+
+	#this first bit parses the file with all of the process info
+	allprocesses = parse(sys.argv[1])
 
 	#
 
-	physical(allprocesses)
-
-	#nextContiguous(allprocesses)
-	#bestContig(allprocesses)
+	nextContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
 	bestContiguous(allprocesses)
-	#worstContiguous(allprocesses)
-	#nonContiguous(allprocesses)
-	#virtualMemory()
+	allprocesses = parse(sys.argv[1])
+	worstContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	nonContiguous(allprocesses)
+	allprocesses = parse(sys.argv[1])
+	virtualMemory()

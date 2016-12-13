@@ -542,7 +542,7 @@ def nextContiguous(pList):
 					cellsChecked += 1
 					i += 1
 
-				if freeTotal >= process.memNeeded & process.memNeeded > freeCount:
+				if freeTotal >= process.memNeeded and process.memNeeded > freeCount:
 					print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
 					defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
 					#print("Defrag time = {0}ms".format(defragTime))
@@ -552,7 +552,7 @@ def nextContiguous(pList):
 					# Edit all process arrival/run times due to defrag
 					for process in allprocesses:
 						for arrUnd in process.arrivalAndRunTimes:
-							if ((process.active) & (time >= arrUnd[0]) & (time <= (arrUnd[0]+arrUnd[1]))):
+							if ((process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1]))):
 								arrUnd[1] += defragTime
 							else:
 								arrUnd[0] += defragTime
@@ -599,6 +599,44 @@ def nextContiguous(pList):
 			break
 		time += 1
 	print("time {0}ms: Simulator ended (Contiguous (Next-Fit))".format(time))
+
+# for each process: remove if possible
+# for each process: if it needs to be added:
+#		find all free partitions
+#		if there is not a partition that is big enough, but there is enough space:
+#			defrag
+#		take the smallest of the free partitions
+#		insert
+
+def bestContiguous(pList):
+	sorted(pList)
+	tableSize = 256
+
+	processTable = ["." for x in range(tableSize)]
+
+	# Initialize variables
+	live = True					# For simulation status
+	memFree = 256				# Available Memory
+	time = 0					# Elapsed in milliseconds
+	completed = 0				# Number of processes completely finished
+
+	while live:
+		for process in pList:
+			if process.readyToRem(time):
+				success = process.removeProcess(processTable, process, time)
+				memFree += success
+				if (success):
+					if (success):
+					print("time {0}ms: Process {1} removed:".format(time, process.processID))
+					printTable(processTable)
+				if process.done:
+					completed += 1
+		for process in pList:
+			if process.readyToAdd(time):
+				#get list of all partitions
+				#if there are no partitions large enough, defrag
+				#add process
+
 
 #Contiguous algorithm
 def bestContiguous(pList):
@@ -684,7 +722,7 @@ def bestContiguous(pList):
 					foundRegion = False
 					for selected in range(len(regions)):
 						# Free memory >= space needed && free memory < current smallestRegion
-						if ((regions[selected][0] >= process.memNeeded) & (regions[selected][0] < smallestRegion)):
+						if ((regions[selected][0] >= process.memNeeded)):
 							#print("Found a good region on region of size {0}".format(regions[selected][0]))
 							smallestRegion = regions[selected][0]
 							startIndex = regions[selected][1]
@@ -698,8 +736,8 @@ def bestContiguous(pList):
 					print("smallestRegion = {0}".format(smallestRegion))
 
 					# Look for defrag if space available but no regions free
-					if foundRegion == False:
-						if ((freeTotal >= process.memNeeded) & (process.memNeeded >= smallestRegion)):
+					if !foundRegion:
+						if ((freeTotal >= process.memNeeded)):
 
 							print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
 							defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
@@ -709,7 +747,7 @@ def bestContiguous(pList):
 							# Edit all process arrival/run times due to defrag
 							for process in allprocesses:
 								for arrUnd in process.arrivalAndRunTimes:
-									if (process.active) & (time >= arrUnd[0]) & (time <= (arrUnd[0]+arrUnd[1])):
+									if (process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1])):
 										arrUnd[1] += defragTime
 									else:
 										arrUnd[0] += defragTime
@@ -796,7 +834,7 @@ def getWorst(processTable, process, largestRegion, freeTotal):
 	foundRegion = False
 	for selected in range(len(regions)):
 		# Free memory >= space needed && free memory < current largestRegion
-		if ((regions[selected][0] >= process.memNeeded) & (regions[selected][0] < largestRegion)):
+		if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] < largestRegion)):
 			# print("Found a good region on region of size {0}".format(regions[selected][0]))
 			largestRegion = regions[selected][0]
 			startIndex = regions[selected][1]
@@ -895,7 +933,7 @@ def worstContiguous(pList):
 						# print(regions[selected][0])
 						# print(process.memNeeded)
 						# print(largestRegion)
-						if ((regions[selected][0] >= process.memNeeded) & (regions[selected][0] >= largestRegion)):
+						if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] >= largestRegion)):
 							# print("Found a good region on region of size {0}".format(regions[selected][0]))
 							largestRegion = regions[selected][0]
 							startIndex = regions[selected][1]
@@ -904,14 +942,14 @@ def worstContiguous(pList):
 
 					# Look for defrag if space available but no regions free
 					if foundRegion == False:
-						if ((freeTotal >= process.memNeeded) & (process.memNeeded >= largestRegion)):
+						if ((freeTotal >= process.memNeeded) and (process.memNeeded >= largestRegion)):
 							print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
 							defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
 
 							# Edit all process arrival/run times due to defrag
 							for process in allprocesses:
 								for arrUnd in process.arrivalAndRunTimes:
-									if (process.active) & (time >= arrUnd[0]) & (time <= (arrUnd[0]+arrUnd[1])):
+									if (process.active) and (time >= arrUnd[0]) and (time <= (arrUnd[0]+arrUnd[1])):
 										arrUnd[1] += defragTime
 
 							startLocations.pop(0)

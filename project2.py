@@ -47,7 +47,6 @@ class process:
 
 		if freespace < self.memNeeded:
 			#failure, so must skip process
-			#print("process {0} failure in adding".format(self.processID))
 			return -1
 		else:
 			temp = 0
@@ -70,7 +69,6 @@ class process:
 
 		if freespace < self.memNeeded:
 			#failure, so must skip process
-			#print("process {0} failure in adding".format(self.processID))
 			return -1
 		else:
 			temp = 0
@@ -137,7 +135,6 @@ def defrag(memory, pList, t_memmove, time, startLocations):
 		if memory[unit] != '.':
 			#if we find a used slot of memory, we shift that process down
 			if firstFreeLoc == None:
-				#print("\t skipping")
 				unit +=1
 				continue
 
@@ -150,18 +147,14 @@ def defrag(memory, pList, t_memmove, time, startLocations):
 
 
 			while unit < start + pMap[currentProcess].memNeeded and unit < len(memory):
-				#print(start, diff, unit)
 				memory[unit-diff] = currentProcess
 				memory[unit] = '.'
 				timeTaken += t_memmove
 				unit+=1
-				#diff+=1
 
-			#printTable(memory)
 			firstFreeLoc += pMap[currentProcess].memNeeded
 		else:
 			if firstFreeLoc == None:
-				#print("\tFFL is now {0}".format(unit))
 				firstFreeLoc = unit
 			unit += 1
 			continue
@@ -216,23 +209,14 @@ def printTable(processTable):
 def insertProcess(processTable, targetProcess, memFree, startIndex, endIndex):
 	# Decrement memory required
 	memLeft = (targetProcess.memNeeded)
-
-	# print(startIndex)
-	# print(endIndex)
-
 	if endIndex > len(processTable):
 		return -15
 
 	# Loop through processTable and add processID between indices
 	if memLeft > memFree:
-		#print("Error, no memory available")
 		return -10
-
 	else:
 		for i in range(startIndex, endIndex):
-
-			# if processTable[i] != ".":
-			#  	print ("Error, memory already allocated in {0}".format(i))
 			if processTable[i] == ".":
 				processTable[i] = targetProcess.processID
 		# Return memory used
@@ -501,14 +485,11 @@ def nextContiguous(pList):
 						process.endIndex = endIndex
 
 						# Insert process into memory
-						# print(startIndex)
-						# print(endIndex)
 						success = insertProcess(processTable, process, memFree, startIndex, endIndex)
 						process.active = True
 
 						# Update most list of most recent indices
 						startLocations.append(endIndex)
-						# print (startLocations)
 						break
 					cellsChecked += 1
 					i += 1
@@ -516,7 +497,6 @@ def nextContiguous(pList):
 				if freeTotal >= process.memNeeded and process.memNeeded > freeCount:
 					print("time {0}ms: Cannot place process {1} -- starting defragmentation".format(time, process.processID))
 					defragTime = defrag(processTable, allprocesses, 1, time, startLocations)
-					#print("Defrag time = {0}ms".format(defragTime))
 					process.active = False
 					process.defragged = True
 
@@ -527,7 +507,6 @@ def nextContiguous(pList):
 								arrUnd[1] += defragTime
 							else:
 								arrUnd[0] += defragTime
-							# print (process.arrivalAndRunTimes)
 
 					startLocations.pop(0)
 					time += defragTime - 1
@@ -546,14 +525,9 @@ def nextContiguous(pList):
 				# Error Check
 				if success > 0:
 					memFree -= success
-					#print("time {0}ms: Process {1} arrived (requires {2} frames)".format(time, process.processID, process.memNeeded))
 					print("time {0}ms: Placed process {1}:".format(time, process.processID))
-					#print (startLocations)
 					printTable(processTable)
 				else:
-					# print (startLocations)
-					# print(startIndex)
-					# print(endIndex)
 					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
 					# Remove set of arrival/run times
 					process.arrivalAndRunTimes.pop(0)
@@ -592,13 +566,12 @@ def getBest(processTable, process, smallestRegion, freeTotal):
 
 	# Sort regions
 	regions = sorted(regions)
-	#print(regions)
+
 	# Iterate through regions and find worst fit for insertion
 	foundRegion = False
 	for selected in range(len(regions)):
 		# Free memory >= space needed && free memory < current largestRegion
 		if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] < smallestRegion)):
-			# print("Found a good region on region of size {0}".format(regions[selected][0]))
 			smallestRegion = regions[selected][0]
 			startIndex = regions[selected][1]
 			foundRegion = True
@@ -675,8 +648,6 @@ def bestContiguous(pList):
 					process.endIndex = endIndex
 
 					# Insert processes into memory
-					# print("Startindex = {0}".format(startIndex))
-					# print("Endindex = {0}".format(endIndex))
 					success = insertProcess(processTable, process, memFree, startIndex, endIndex)
 
 					# Update most list of most recent indices
@@ -720,9 +691,6 @@ def bestContiguous(pList):
 					print("time {0}ms: Placed process {1}:".format(time, process.processID))
 					printTable(processTable)
 				else:
-					# print(regions)
-					# print(startIndex)
-					# print(endIndex)
 					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
 					# Remove set of arrival/run times
 					process.arrivalAndRunTimes.pop(0)
@@ -730,7 +698,7 @@ def bestContiguous(pList):
 						process.done = True
 						completed += 1
 					printTable(processTable)
-				#Reset success
+				# Reset success
 				success = 0
 				# Look for defrag if space available but no regions free
 
@@ -763,13 +731,11 @@ def getWorst(processTable, process, largestRegion, freeTotal):
 
 	# Sort regions
 	regions = sorted(regions, reverse=True)
-	#print(regions)
 	# Iterate through regions and find worst fit for insertion
 	foundRegion = False
 	for selected in range(len(regions)):
 		# Free memory >= space needed && free memory < current largestRegion
 		if ((regions[selected][0] >= process.memNeeded) and (regions[selected][0] < largestRegion)):
-			# print("Found a good region on region of size {0}".format(regions[selected][0]))
 			largestRegion = regions[selected][0]
 			startIndex = regions[selected][1]
 			foundRegion = True
@@ -846,8 +812,6 @@ def worstContiguous(pList):
 					process.endIndex = endIndex
 
 					# Insert processes into memory
-					# print("Startindex = {0}".format(startIndex))
-					# print("Endindex = {0}".format(endIndex))
 					success = insertProcess(processTable, process, memFree, startIndex, endIndex)
 
 					# Update most list of most recent indices
@@ -891,9 +855,6 @@ def worstContiguous(pList):
 					print("time {0}ms: Placed process {1}:".format(time, process.processID))
 					printTable(processTable)
 				else:
-					# print(regions)
-					# print(startIndex)
-					# print(endIndex)
 					print("time {0}ms: Cannot place process {1} -- skipped!".format(time, process.processID))
 					# Remove set of arrival/run times
 					process.arrivalAndRunTimes.pop(0)
@@ -978,15 +939,8 @@ def parse(filename):
 
 if __name__ == '__main__':
 
-	#this first bit parses the file with all of the process info
+	# Parse file with all process info, then run memory management simulations
 	allprocesses = parse(sys.argv[1])
-
-	# for p in allprocesses:
-	# 	print(p)
-	# sorted(allprocesses, key = ltStart)
-	# for p in allprocesses:
-	# 	print(p)
-
 	nextContiguous(allprocesses)
 	allprocesses = parse(sys.argv[1])
 	bestContiguous(allprocesses)

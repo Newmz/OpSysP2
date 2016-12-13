@@ -970,7 +970,6 @@ def parse(filename):
 			t[0] = int(t[0])
 			t[1] = int(t[1])
 			arrivalAndRunTimes.append(t)
-		print (arrivalAndRunTimes)
 		allprocesses.append(process(processID,memNeeded,arrivalAndRunTimes))
 	return allprocesses
 
